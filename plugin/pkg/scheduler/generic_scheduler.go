@@ -233,7 +233,7 @@ func CollateTotals(nodes api.NodeList, listner algorithm.PodLister) {
 
 	mapping, _ := predicates.MapPodsToMachines(listner)
 	for k, v := range mapping {
-		fmt.Println("Node Name :: %s", k)
+		glog.Infof("Node Name :: %s", k)
 		totalCpu := int64(0)
 		totalMem := int64(0)
 		for _, pod := range v {
@@ -244,7 +244,7 @@ func CollateTotals(nodes api.NodeList, listner algorithm.PodLister) {
 			}
 
 		}
-		fmt.Println("Node CPU:: %s", totalCpu)
-		fmt.Println("Node Mem:: %s", totalMem)
+		glog.Infof("Node CPU:: %s", totalCpu)
+		glog.Infof("Node Mem:: %s", totalMem)
 	}
 }

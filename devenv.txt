@@ -1,0 +1,5 @@
+export KPATH=$HOME/code/kubernetes
+export GOPATH=$KPATH
+cd $KPATH/src/github.com/kubernetes/kubernetes
+godep restore
+
