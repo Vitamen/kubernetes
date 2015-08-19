@@ -28,6 +28,7 @@ import (
 	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
+
 )
 
 type FailedPredicateMap map[string]util.StringSet
@@ -78,6 +79,10 @@ func (g *genericScheduler) Schedule(pod *api.Pod, minionLister algorithm.MinionL
 	if err != nil {
 		return "", err
 	}
+
+
+	CollateTotals(minions,g.pods)
+
 	if len(priorityList) == 0 {
 		return "", &FitError{
 			Pod:              pod,
@@ -210,10 +215,36 @@ func EqualPriority(_ *api.Pod, podLister algorithm.PodLister, minionLister algor
 }
 
 func NewGenericScheduler(predicates map[string]algorithm.FitPredicate, prioritizers []algorithm.PriorityConfig, pods algorithm.PodLister, random *rand.Rand) algorithm.ScheduleAlgorithm {
+
 	return &genericScheduler{
 		predicates:   predicates,
 		prioritizers: prioritizers,
 		pods:         pods,
 		random:       random,
+	}
+}
+
+func CollateTotals(nodes api.NodeList, listner algorithm.PodLister) {
+	//	for _,e := range nodes.Items {
+	//		fmt.Println("Node Name :: ",e.Name)
+	//		fmt.Println("Node Status :: ",e.Status.Capacity)
+	//		fmt.Println("Number of Pods",e.Status.Capacity.Pods())
+	//	}
+
+	mapping, _ := predicates.MapPodsToMachines(listner)
+	for k, v := range mapping {
+		fmt.Println("Node Name :: %s", k)
+		totalCpu := int64(0)
+		totalMem := int64(0)
+		for _, pod := range v {
+			for _, container := range pod.Spec.Containers {
+				requests := container.Resources.Requests
+				totalMem += requests.Memory().Value()
+				totalCpu += requests.Cpu().MilliValue()
+			}
+
+		}
+		fmt.Println("Node CPU:: %s", totalCpu)
+		fmt.Println("Node Mem:: %s", totalMem)
 	}
 }
